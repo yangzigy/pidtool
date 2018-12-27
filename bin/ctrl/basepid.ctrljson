@@ -1,0 +1,9 @@
+{
+	"name":"basepid",
+	"dllname":"baseso.so",
+	"funname":"model_fun_arma",
+	"cfg":
+	{
+		"k_in":0.5
+	}
+}

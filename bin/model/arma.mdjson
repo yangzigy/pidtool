@@ -1,0 +1,10 @@
+{
+	"name":"arma",
+	"dllname":"baseso.so",
+	"funname":"model_fun_arma",
+	"cfg":
+	{
+		"A_list":[0.10000000149011612],
+		"B_list":[0,0.89999997615814209]
+	}
+}

@@ -1,6 +1,6 @@
 # 约束：即使在不同目录下、具有不同扩展名，也不允许出现同名源文件
 # 可执行文件
-exe   := ../bin/ctrl_basepid.exe
+exe   := ../bin/baseso.exe
 all : $(exe)	#第一个目标
 # 源文件目录
 src_dir   := .
@@ -77,7 +77,7 @@ $(objc)	:	%.o	:	$(filter %/$(patsubst %.o,%.c,$(notdir %)),$(src_c))
 .PHONY : clean all cleanall rebuild changeso
 
 so   : 
-	make cpp_flag="$(cpp_flag) -D SOMAKE -fPIC" ld_flag="$(ld_flag) -shared" exe=../bin/model/model_arma.so
+	make cpp_flag="$(cpp_flag) -D SOMAKE -fPIC" ld_flag="$(ld_flag) -shared" exe=../bin/lib/baseso.so
 
 rebuild: clean all
 clean :
