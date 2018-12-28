@@ -1,5 +1,4 @@
 {
-	"name":"arma",
 	"dllname":"baseso.so",
 	"funname":"model_fun_arma",
 	"cfg":

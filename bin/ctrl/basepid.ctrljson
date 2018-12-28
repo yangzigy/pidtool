@@ -1,7 +1,6 @@
 {
-	"name":"basepid",
 	"dllname":"baseso.so",
-	"funname":"model_fun_arma",
+	"funname":"ctrl_fun_basepid",
 	"cfg":
 	{
 		"k_in":0.5

@@ -15,23 +15,27 @@ CONFIG += c++11
 CONFIG += warn_off  #不要啥都提示
 DEFINES += QT_DEPRECATED_WARNINGS
 
+LIBS += -ldl
+
 INCLUDEPATH += ../common 
 
-#win32 {
-	#LIBS += -lwsock32
-#}
+win32 {
+	LIBS += -lwsock32
+}
 
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    ../common/pid.cpp \
-    ../common/jsoncpp.cpp 
+    ../common/common.cpp \
+    ../common/jsoncpp.cpp \
+    appflow.cpp
 
 HEADERS += \
         mainwindow.h \
+    ../common/common.h \
     ../common/json.h \
-    ../common/pid.h \
-    ../common/main.h 
+    ../common/main.h \
+    appflow.h
 
 FORMS += \
         mainwindow.ui

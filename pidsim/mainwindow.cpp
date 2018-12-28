@@ -73,4 +73,12 @@ void MainWindow::set_theme(QChart::ChartTheme theme)
 	}
 	window()->setPalette(pal);
 }
-
+void MainWindow::ui_initial(void)
+{
+	for(auto &it:sp_ctrl)
+	{
+	}
+	for(auto &it:sp_md)
+	{
+	}
+}

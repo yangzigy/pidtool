@@ -3,40 +3,45 @@
 
 #include <QMainWindow>
 #include <QFileDialog>
+#include <qdir>
 #include <QtCharts>
 #include <QtWidgets/QGraphicsView>
 #include <QtCharts/QChartGlobal>
 #include <QtCharts/QAbstractAxis>
 #include "qmessagebox.h"
+#include "common.h"
 #include "json.h"
+#include "appflow.h"
 
 using namespace QtCharts;
 
 namespace Ui {
-class MainWindow;
+	class MainWindow;
 }
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+	explicit MainWindow(QWidget *parent = 0);
+	~MainWindow();
+
+	void ui_initial(void);
 
 	QChartView *chartView0;
 	QChart *chart0;
-    QLineSeries *chart_serial_0;
-    QLineSeries *chart_serial_1;
+	QLineSeries *chart_serial_0;
+	QLineSeries *chart_serial_1;
 	QChartView *chartView1;
-    QDateTimeAxis *mAxis0;
-    QValueAxis *mAyis0;
+	QDateTimeAxis *mAxis0;
+	QValueAxis *mAyis0;
 	void set_theme(QChart::ChartTheme theme);
-//signals:
+	//signals:
 	//void signal_rx_cb(); //接收信号
-//public slots:
+	//public slots:
 private:
-    Ui::MainWindow *ui;
+	Ui::MainWindow *ui;
 };
 
 #endif // MAINWINDOW_H
