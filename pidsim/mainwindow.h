@@ -48,6 +48,8 @@ public:
 private slots:
 	void on_cb_ctrlalg_currentIndexChanged(const QString &arg1);
 
+	void on_bt_sim_clicked();
+
 private:
 	Ui::MainWindow *ui;
 };

@@ -89,7 +89,7 @@ void part_ini(vector<string> &files,Tmap &sp) //将文件列表转换为内存�
 		tc.id=it;
 		sp[it]=make_shared<Talg>(tc);
 	}
-	if(sp.size()<=0) throw string("no functions\n");
+	if(sp.size()<=0) throw string("no functions")+__FILE__+sFormat(":%d\n",__LINE__);
 }
 void ctrl_ini(vector<string> &files);
 void model_ini(vector<string> &files);

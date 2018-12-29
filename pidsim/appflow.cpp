@@ -17,11 +17,11 @@ void CAlgObj::loadso(void)
 		char *error;
 		void *tp=dlopen((exepath+"lib/"+dllname).c_str(), RTLD_GLOBAL);
 		if(!tp)
-			throw string("load dll:")+dllname+" failed\n";
+			throw string("load dll:")+dllname+" failed. "+__FILE__+sFormat(":%d\n",__LINE__);
 		sofiles[dllname] = tp;
 		cmd_fun=(CMD_FUN)dlsym(sofiles[dllname],"cmd_fun");
 		if ((error = dlerror()) != NULL)
-			throw string("load dll:")+dllname+" : cmd_fun failed\n";
+			throw string("load dll:")+dllname+" : cmd_fun failed. "+__FILE__+sFormat(":%d\n",__LINE__);
 	}
 }
 string CCtrlAlg::dirname="ctrl";
@@ -31,7 +31,7 @@ void CCtrlAlg::loadso(void)
 	char *error;
 	fun=(CTRL_FUN)dlsym(sofiles[dllname],funname.c_str());
 	if ((error = dlerror()) != NULL)
-		throw string("load dll:"+dllname+" : "+funname+" failed\n");
+		throw string("load dll:"+dllname+" : "+funname+" failed. "+__FILE__+sFormat(":%d\n",__LINE__));
 }
 string CSysModel::dirname="model";
 void CSysModel::loadso(void)
@@ -40,7 +40,7 @@ void CSysModel::loadso(void)
 	char *error;
 	fun=(MODEL_FUN)dlsym(sofiles[dllname],funname.c_str());
 	if ((error = dlerror()) != NULL)
-		throw string("load dll:"+dllname+" : "+funname+" failed\n");
+		throw string("load dll:"+dllname+" : "+funname+" failed. "+__FILE__+sFormat(":%d\n",__LINE__));
 }
 void ctrl_ini(vector<string> &files)
 {

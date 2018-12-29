@@ -88,8 +88,7 @@ void MainWindow::ui_initial(void)
 	on_cb_ctrlalg_currentIndexChanged(ui->cb_ctrlalg->currentText());
 }
 
-
-void MainWindow::on_cb_ctrlalg_currentIndexChanged(const QString &arg1)
+void MainWindow::on_cb_ctrlalg_currentIndexChanged(const QString &arg1) //选择算法
 {
 	if(is_init_ctrls==0) return;
 	if(subWidget) //若需要重新布局
@@ -110,4 +109,61 @@ void MainWindow::on_cb_ctrlalg_currentIndexChanged(const QString &arg1)
 
 	ui->gridLayout_8->addWidget(subWidget,0,0); //加入到栅格布局的第0行第0列
 	pdict=new CDictDis(sp_ctrl[arg1.toStdString()]->cfgdes,subWidget);
+}
+
+void MainWindow::on_bt_sim_clicked() //开始仿真
+{
+	//取得当前的仿真数据源--期望数据
+	string expdatafilename=ui->le_exp_filename->text().toStdString();
+	string text=read_textfile(expdatafilename.c_str());
+	if(text.size()<=0) return;
+	vector<string> vs=com_split(text,"\n");
+	vector<float> expdata;
+	expdata.resize(vs.size());
+	for(int i=0;i<vs.size();i++)
+	{
+		sscanf(vs[i].c_str(),"%f",&(expdata[i]));
+	}
+///////////////////////////////////////////////////////////////////////////
+//					进行仿真
+///////////////////////////////////////////////////////////////////////////
+	Json::Value rstv;
+	CFilePath fp;
+	Json::FastWriter writer;
+	string s;
+///////////////////////////////////////////////////////////////////////////
+//取得模型
+	fp=ui->cb_model->currentText().toStdString();
+	auto pmodel=sp_md[fp.name_ext];
+	//设置参数
+	rstv[fp.name]="set_cfg";
+	rstv["cfg"]=pmodel->cfg;
+	s=writer.write(rstv);
+	pmodel->cmd_fun(s.c_str());
+///////////////////////////////////////////////////////////////////////////
+//取得算法
+	auto pctrl=sp_ctrl[ui->cb_ctrlalg->currentText().toStdString()];
+	//CMD_FUN ctrl_cmd_fun=pctrl->cmd_fun;
+	//设置参数
+	//获取参数
+	//设置曲线
+///////////////////////////////////////////////////////////////////////////
+//主流程
+	cout<<"pid sim"<<endl;
+	int i;
+	float u=0,y=0,ea=0;
+	//噪音
+	default_random_engine rand_e;
+	normal_distribution<> rand_norm_small(0,1); //均值、标准差
+	for(int i=0;i<expdata.size();i++)
+	{
+		u=pctrl->fun(expdata[i],y);
+	//取得曲线
+		printf("%.2f %.2f\n",u,y);
+		y=pmodel->fun(u);
+		y+=rand_norm_small(rand_e);
+		ea+=rand_norm_small(rand_e);
+		ea*=0.9;
+		y+=ea;
+	}
 }
