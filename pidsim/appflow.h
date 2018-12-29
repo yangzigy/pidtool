@@ -42,13 +42,31 @@ public:
 class CCtrlAlg : public CAlgObj //控制对象
 {
 public:
-	CTRL_FUN fun;
+	CTRL_FUN fun; //算法调用函数
+	Json::Value cfgdes; //参数描述
+	static string dirname;
+	virtual Json::Value toJson(void)
+	{
+		Json::Value v=CAlgObj::toJson();
+		v["cfgdes"]=cfgdes;
+		return v;
+	}
+	virtual int fromJson(Json::Value &v)
+	{
+		int r=CAlgObj::fromJson(v);
+		if(v["cfgdes"].isArray())
+		{
+			cfgdes=v["cfgdes"];
+		}
+		return r;
+	}
 	virtual void loadso(void); //加载动态库和函数
 };
 class CSysModel : public CAlgObj //模型对象
 {
 public:
-	MODEL_FUN fun;
+	MODEL_FUN fun; //算法调用函数
+	static string dirname;
 	virtual void loadso(void); //加载动态库和函数
 };
 
@@ -56,10 +74,11 @@ template <class Tmap,class Talg>
 void part_ini(vector<string> &files,Tmap &sp) //将文件列表转换为内存对象，放在map中
 {
 	sp.clear();
-	for(auto &it:files)
+	for(auto &it:files) //输入的文件列表不含全路径
 	{
+		string fullpath=exepath+Talg::dirname+"/"+it;
 		Json::Value v;
-		string text=read_textfile(it.c_str());
+		string text=read_textfile(fullpath.c_str());
 		Json::Reader reader;
 		reader.parse(text.c_str(),v,false); //可以有注释,false不会复制
 		cout<<"get a config file"<<endl;

@@ -26,8 +26,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	chart_serial_1->setUseOpenGL(true); //使用OpenGL加速显示
 	chart0->addSeries(chart_serial_1);
 	chart0->createDefaultAxes();
-	chart0->axisX()->setRange(0, config["记录长度"].asInt());
-	chart0->axisY()->setRange(-0x3ffff/2, 0x3ffff/2);
+	chart0->axisX()->setRange(0, 100);
+	chart0->axisY()->setRange(-100, 100);
 	static_cast<QValueAxis *>(chart0->axisX())->setLabelFormat("%d  ");
 	static_cast<QValueAxis *>(chart0->axisY())->setLabelFormat("%d  ");
 	chartView0->setRubberBand(QChartView::RectangleRubberBand);
@@ -75,10 +75,39 @@ void MainWindow::set_theme(QChart::ChartTheme theme)
 }
 void MainWindow::ui_initial(void)
 {
-	for(auto &it:sp_ctrl)
+	for(auto &it:sp_ctrl) //控制算法列表
 	{
+		ui->cb_ctrlalg->addItem(it.first.c_str());
 	}
-	for(auto &it:sp_md)
+	for(auto &it:sp_md) //模型列表
 	{
+		ui->cb_model->addItem(it.first.c_str());
 	}
+	is_init_ctrls=1;
+	ui->cb_ctrlalg->setCurrentIndex(0);
+	on_cb_ctrlalg_currentIndexChanged(ui->cb_ctrlalg->currentText());
+}
+
+
+void MainWindow::on_cb_ctrlalg_currentIndexChanged(const QString &arg1)
+{
+	if(is_init_ctrls==0) return;
+	if(subWidget) //若需要重新布局
+	{
+		QLayoutItem *child;
+		while(child=ui->groupBox_5->layout()->takeAt(0))
+		{
+			delete child;
+		}
+	//	delete subWidget;
+		delete pdict;
+	}
+	DBGL;
+	cout<<arg1.toStdString()<<endl;
+	pjson(sp_ctrl[arg1.toStdString()]->cfg);
+	pjson(sp_ctrl[arg1.toStdString()]->cfgdes);
+	subWidget=new QWidget();
+
+	ui->gridLayout_8->addWidget(subWidget,0,0); //加入到栅格布局的第0行第0列
+	pdict=new CDictDis(sp_ctrl[arg1.toStdString()]->cfgdes,subWidget);
 }

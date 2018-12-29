@@ -12,6 +12,7 @@
 #include "common.h"
 #include "json.h"
 #include "appflow.h"
+#include "dictdis.h"
 
 using namespace QtCharts;
 
@@ -29,6 +30,10 @@ public:
 
 	void ui_initial(void);
 
+	CDictDis *pdict=0;
+	QWidget *subWidget=0;
+	int is_init_ctrls=0; //算法列表是否已经完成
+
 	QChartView *chartView0;
 	QChart *chart0;
 	QLineSeries *chart_serial_0;
@@ -40,6 +45,9 @@ public:
 	//signals:
 	//void signal_rx_cb(); //接收信号
 	//public slots:
+private slots:
+	void on_cb_ctrlalg_currentIndexChanged(const QString &arg1);
+
 private:
 	Ui::MainWindow *ui;
 };

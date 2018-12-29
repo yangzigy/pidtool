@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 	return a.exec();
 }
 
-vector<string> list_dir(const char *path,const char *filter)
+vector<string> list_dir(const char *path,const char *filter) //输入路径名，输出文件名列表，不含全路径
 {
 	QDir dir(path);
 	if(!dir.exists())
@@ -62,8 +62,7 @@ vector<string> list_dir(const char *path,const char *filter)
 	vector<string> rst;
 	for(int i=0;i<dir.count();i++)
 	{
-		string s=path;
-		rst.push_back(s+"/"+dir[i].toStdString());
+		rst.push_back(dir[i].toStdString());
 	}
 	return rst;
 }

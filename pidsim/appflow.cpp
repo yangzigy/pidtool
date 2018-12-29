@@ -24,6 +24,7 @@ void CAlgObj::loadso(void)
 			throw string("load dll:")+dllname+" : cmd_fun failed\n";
 	}
 }
+string CCtrlAlg::dirname="ctrl";
 void CCtrlAlg::loadso(void)
 {
 	CAlgObj::loadso();
@@ -32,6 +33,7 @@ void CCtrlAlg::loadso(void)
 	if ((error = dlerror()) != NULL)
 		throw string("load dll:"+dllname+" : "+funname+" failed\n");
 }
+string CSysModel::dirname="model";
 void CSysModel::loadso(void)
 {
 	CAlgObj::loadso();
