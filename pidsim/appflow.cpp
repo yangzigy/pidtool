@@ -12,17 +12,17 @@ static map<string,void*> sofiles; //加载的所有动态库文件,文件名：�
 
 void CAlgObj::loadso(void)
 {
+	char *error;
 	if(sofiles.count(dllname)<=0) //若还没打开这个动态库
 	{
-		char *error;
 		void *tp=dlopen((exepath+"lib/"+dllname).c_str(), RTLD_GLOBAL);
 		if(!tp)
 			throw string("load dll:")+dllname+" failed. "+__FILE__+sFormat(":%d\n",__LINE__);
 		sofiles[dllname] = tp;
-		cmd_fun=(CMD_FUN)dlsym(sofiles[dllname],"cmd_fun");
-		if ((error = dlerror()) != NULL)
-			throw string("load dll:")+dllname+" : cmd_fun failed. "+__FILE__+sFormat(":%d\n",__LINE__);
 	}
+	cmd_fun=(CMD_FUN)dlsym(sofiles[dllname],"cmd_fun");
+	if ((error = dlerror()) != NULL)
+		throw string("load dll:")+dllname+" : cmd_fun failed. "+__FILE__+sFormat(":%d\n",__LINE__);
 }
 string CCtrlAlg::dirname="ctrl";
 void CCtrlAlg::loadso(void)
