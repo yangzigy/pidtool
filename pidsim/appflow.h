@@ -70,6 +70,13 @@ public:
 	virtual void loadso(void); //加载动态库和函数
 };
 
+///////////////////////////////////////////////////////////////////
+//程序体系数据
+extern map<string,shared_ptr<CCtrlAlg> > sp_ctrl; //控制算法列表
+extern map<string,shared_ptr<CSysModel> > sp_md; //模型列表
+
+///////////////////////////////////////////////////////////////////
+//初始化
 template <class Tmap,class Talg>
 void part_ini(vector<string> &files,Tmap &sp) //将文件列表转换为内存对象，放在map中
 {
@@ -93,11 +100,21 @@ void part_ini(vector<string> &files,Tmap &sp) //将文件列表转换为内存�
 }
 void ctrl_ini(vector<string> &files);
 void model_ini(vector<string> &files);
-
 ///////////////////////////////////////////////////////////////////
-//程序体系数据
-extern map<string,shared_ptr<CCtrlAlg> > sp_ctrl; //控制算法列表
-extern map<string,shared_ptr<CSysModel> > sp_md; //模型列表
+//仿真流程及配置
+extern int en_noise_norm; //正太分布噪声
+extern float nnorm_mean; //均值
+extern float nnorm_std; //均方差
+extern int en_noise_acc; //累积正太分布噪声
+extern float nacc_std; //均方差
+extern float eval_std; //评估效果
+void sim_proc(string expdatafilename, //期望数据文件名
+				CFilePath fp_model, //模型文件名
+				CFilePath fp_ctrl, //控制文件名
+				Json::Value dict_cfg, //从dict控件中取得的cfg
+				function<int (Json::Value &v)> setcurv, //设置曲线函数,返回总数量
+				function<void (u8 series_n,int x,float y)> curvdata //曲线数据函数
+				);
 
 #endif
 

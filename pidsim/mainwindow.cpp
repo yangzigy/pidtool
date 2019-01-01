@@ -100,6 +100,7 @@ void MainWindow::on_cb_ctrlalg_currentIndexChanged(const QString &arg1) //选择
 		}
 	//	delete subWidget;
 		delete pdict;
+		pdict=0;
 	}
 	DBGL;
 	cout<<arg1.toStdString()<<endl;
@@ -110,115 +111,153 @@ void MainWindow::on_cb_ctrlalg_currentIndexChanged(const QString &arg1) //选择
 	ui->gridLayout_8->addWidget(subWidget,0,0); //加入到栅格布局的第0行第0列
 	pdict=new CDictDis(sp_ctrl[arg1.toStdString()]->cfgdes,subWidget);
 }
+void MainWindow::on_bt_fitscreen_clicked() //适应屏幕
+{
+	float max=-0xffffffff,min=0xffffffff;
+	int curv_len=((QLineSeries*)(chart0->series()[0]))->points().size();
+	for(auto &it:chart0->series())
+	{
+		for(int i=0;i<(((QLineSeries*)it)->points()).size();i++)
+		{
+			float y=((QLineSeries*)it)->points()[i].y();
+			if(y>max) max=y; if(y<min) min=y;
+		}
+	}
+	chart0->axisX()->setRange(0,curv_len+2);
+	chart0->axisY()->setRange(min,max);
+}
 
 void MainWindow::on_bt_sim_clicked() //开始仿真
 {
 ///////////////////////////////////////////////////////////////////////////
+//配置
+	en_noise_norm=ui->cb_noise_norm->isChecked()?1:0;
+	nnorm_mean=ui->le_nnorm_mean->text().toDouble();
+	nnorm_std=ui->le_nnorm_std->text().toDouble();
+	en_noise_acc=ui->cb_noise_acc->isChecked()?1:0;
+	nacc_std=ui->le_nacc_std->text().toDouble();
 //取得当前的仿真数据源--期望数据
 	string expdatafilename=ui->le_exp_filename->text().toStdString();
-	string text=read_textfile(expdatafilename.c_str());
-	vector<string> vs=com_split(text,"\n");
-	if(vs.size()<=0) //若文件不对
-	{
-		QMessageBox::information(this,"error", "exp 文件错误", QMessageBox::Yes);
-	}
-	vector<float> expdata;
-	expdata.resize(vs.size());
-	for(int i=0;i<vs.size();i++)
-	{
-		sscanf(vs[i].c_str(),"%f",&(expdata[i]));
-	}
-	Json::Value rstv;
 	CFilePath fp_model;
 	CFilePath fp_ctrl;
-	Json::FastWriter writer;
-	Json::Reader reader;
-	string s;
-///////////////////////////////////////////////////////////////////////////
 //取得模型
 	fp_model=ui->cb_model->currentText().toStdString();
-	auto pmodel=sp_md[fp_model.name_ext];
-	//设置参数
-	rstv[fp_model.name]="set_cfg";
-	rstv["cfg"]=pmodel->cfg;
-	s=writer.write(rstv);
-	pmodel->cmd_fun(s.c_str());
-///////////////////////////////////////////////////////////////////////////
 //取得算法
 	fp_ctrl=ui->cb_ctrlalg->currentText().toStdString();
-	auto pctrl=sp_ctrl[fp_ctrl.name_ext];
-	//CMD_FUN ctrl_cmd_fun=pctrl->cmd_fun;
-	//设置参数
-	rstv.clear();
-	//获取参数
-	rstv.clear();
-	rstv[fp_ctrl.name]="get_cfg";
-	s=writer.write(rstv);
-	s=pctrl->cmd_fun(s.c_str());
-	rstv.clear();
-	reader.parse(s,rstv);
-	//设置曲线
-	chart0->removeAllSeries(); //首先去掉所有曲线
-	chart_serial_0= new QLineSeries(chart0);
-	chart_serial_0->setName("e");
-	chart_serial_0->setUseOpenGL(true); //使用OpenGL加速显示
-	chart0->addSeries(chart_serial_0);
-	chart_serial_1= new QLineSeries(chart0);
-	chart_serial_1->setName("u");
-	chart_serial_1->setUseOpenGL(true); //使用OpenGL加速显示
-	chart0->addSeries(chart_serial_1);
-	if(rstv["curve"].isArray())
+	Json::Value dict_cfg; //从dict控件中取得的cfg
+	pdict->getData(dict_cfg);
+	u8 curv_n=2; //总曲线数
+//调用运行函数
+	sim_proc(expdatafilename,fp_model,fp_ctrl,dict_cfg,
+		[this,&curv_n](Json::Value &v) //设置曲线
+		{
+			//pjson(v);
+			chart0->removeAllSeries(); //首先去掉所有曲线
+			chart_serial_0= new QLineSeries(chart0);
+			chart_serial_0->setName("e");
+			chart_serial_0->setUseOpenGL(true); //使用OpenGL加速显示
+			chart0->addSeries(chart_serial_0);
+			chart_serial_1= new QLineSeries(chart0);
+			chart_serial_1->setName("u");
+			chart_serial_1->setUseOpenGL(true); //使用OpenGL加速显示
+			chart0->addSeries(chart_serial_1);
+			if(v.isArray())
+			{
+				for(auto &it:v)
+				{
+					QLineSeries *tmpseries=new QLineSeries(chart0);
+					tmpseries->setName(it.asString().c_str());
+					tmpseries->setUseOpenGL(true); //使用OpenGL加速显示
+					chart0->addSeries(tmpseries);
+					curv_n++;
+				}
+			}
+			chart0->createDefaultAxes();
+			return curv_n;
+		},
+		[this](u8 series_n,int x,float y) //曲线设置函数
+		{
+			if(series_n>=chart0->series().size()) return ;
+			((QLineSeries*)chart0->series()[series_n])->append(x,y);
+		}
+	);
+	on_bt_fitscreen_clicked();
+	//评估值
+	ui->lb_eval_std->setText(sFormat("%.2f",eval_std).c_str());
+}
+
+void MainWindow::on_bt_import_data_clicked() //导入数据
+{
+	auto name=QFileDialog::getOpenFileName(0,"","","csv文件(*.csv)");
+	if(name!="")
 	{
-		for(auto &it:rstv["curve"])
+		string text=read_textfile(name.toStdString().c_str());
+		vector<string> vs=com_split(text,"\n");
+		if(vs.size()<2) return ;
+		//第一行
+		vector<string> line=com_split(vs[0],",");
+		if(line.size()<=0 || line.size()>10) return ;
+		chart0->removeAllSeries(); //首先去掉所有曲线
+		for(auto &it:line)
 		{
 			QLineSeries *tmpseries=new QLineSeries(chart0);
-			tmpseries->setName(it.asString().c_str());
+			tmpseries->setName(it.c_str());
 			tmpseries->setUseOpenGL(true); //使用OpenGL加速显示
 			chart0->addSeries(tmpseries);
 		}
-	}
-	chart0->createDefaultAxes();
-///////////////////////////////////////////////////////////////////////////
-//主流程
-	cout<<"pid sim"<<endl;
-	int i;
-	float u=0,y=0,ea=0;
-	//噪音
-	default_random_engine rand_e;
-	normal_distribution<> rand_norm_small(0,1); //均值、标准差
-	float max=-0xffffffff,min=0xffffffff;
-	for(int i=0;i<expdata.size();i++)
-	{
-		u=pctrl->fun(expdata[i],y);
-	//取得曲线
-		double d=expdata[i]-y;
-		printf("%.2f %.2f\n",u,d);
-		chart_serial_0->append(i,d);
-		chart_serial_1->append(i,u);
-		if(u>max) max=u; if(u<min) min=u;
-		if(d>max) max=d; if(d<min) min=d;
-		rstv.clear();
-		rstv[fp_ctrl.name]="curve";
-		s=writer.write(rstv);
-		s=pctrl->cmd_fun(s.c_str());
-		rstv.clear();
-		reader.parse(s,rstv);
-		if(rstv["curve"].isArray() && rstv["curve"].size()==chart0->series().size()-2)
+		chart0->createDefaultAxes();
+		int curv_n=line.size();
+		chart0->createDefaultAxes();
+		for(int i=1;i<vs.size();i++) //每一行
 		{
-			for(int j=0;j<rstv["curve"].size();j++)
+			line=com_split(vs[i],",");
+			if(line.size()!=curv_n) continue;
+			for(int j=0;j<line.size();j++)
 			{
-				d=rstv["curve"][j].asDouble();
-				((QLineSeries*)chart0->series()[j+2])->append(i,d);
-				if(d>max) max=d; if(d<min) min=d;
+				float y=0;
+				sscanf(line[j].c_str(),"%f",&y);
+				((QLineSeries*)chart0->series()[j])->append(i-1,y);
 			}
 		}
-	//调用模型
-		y=pmodel->fun(u);
-		y+=rand_norm_small(rand_e);
-		ea+=rand_norm_small(rand_e);
-		ea*=0.9;
-		y+=ea;
+		on_bt_fitscreen_clicked();
 	}
-	chart0->axisX()->setRange(0,expdata.size());
-	chart0->axisY()->setRange(min,max);
+}
+
+void MainWindow::on_bt_save_data_clicked() //导出数据
+{
+	auto name=QFileDialog::getSaveFileName (0,"","","csv文件(*.csv)");
+	if(name!="")
+	{
+		CComFile cf;
+		cf.open(name.toStdString().c_str(),"w");
+		//首先写第一行
+		string line="";
+		for(auto &it:chart0->series())
+		{
+			line+=it->name().toStdString();
+			line+=",";
+		}
+		line.pop_back();
+		line+="\n";
+		cf.write((char*)line.c_str(),line.size());
+		int s_n=chart0->series().size();
+		int d_n=((QLineSeries*)(chart0->series()[0]))->points().size();
+		for(int i=0;i<d_n;i++)
+		{
+			line="";
+			for(int j=0;j<s_n;j++)
+			{
+				float y=((QLineSeries*)(chart0->series()[j]))->points()[i].y();
+				line+=sFormat("%.2f,",y);
+			}
+			line.pop_back();
+			line+="\n";
+			cf.write((char*)line.c_str(),line.size());
+		}
+	}
+}
+
+void MainWindow::on_bt_recognize_clicked() //系统辨识
+{
+
 }

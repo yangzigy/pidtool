@@ -1,22 +1,6 @@
 {
 	"dllname":"baseso.so",
 	"funname":"ctrl_fun_basepid",
-	"cfg":
-	{
-		"k_in":0.5,
-		"P":10,
-		"I":1,
-		"D":1,
-		"T":0.1,
-		"max":100,
-		"min":-100,
-		"E":100,
-		"Dc":0.1,
-		"die":0.01,
-		"max_i":100,
-		"max_d":100,
-		"high_e":10
-	},
 	"cfgdes":
 	[
 		{"name":"k_in","dft":0.5,"type":"double","des":""},

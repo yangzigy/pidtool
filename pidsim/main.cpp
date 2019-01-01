@@ -46,7 +46,9 @@ int main(int argc, char *argv[])
 	w.ui_initial();
 	return a.exec();
 }
-
+///////////////////////////////////////////////////////
+//				工具
+///////////////////////////////////////////////////////
 vector<string> list_dir(const char *path,const char *filter) //输入路径名，输出文件名列表，不含全路径
 {
 	QDir dir(path);
@@ -65,4 +67,8 @@ vector<string> list_dir(const char *path,const char *filter) //输入路径名�
 		rst.push_back(dir[i].toStdString());
 	}
 	return rst;
+}
+void msgbox_yes(string title,string text) //yes对话框
+{
+	QMessageBox::information(pwin,title.c_str(),text.c_str(), QMessageBox::Yes);
 }

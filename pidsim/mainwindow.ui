@@ -124,6 +124,15 @@
          <property name="title">
           <string>数据控制</string>
          </property>
+         <layout class="QGridLayout" name="gridLayout_9">
+          <item row="0" column="0">
+           <widget class="QPushButton" name="bt_fitscreen">
+            <property name="text">
+             <string>适应屏幕</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -219,12 +228,18 @@
             <property name="text">
              <string>正态累积</string>
             </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="0" column="0">
            <widget class="QCheckBox" name="cb_noise_norm">
             <property name="text">
              <string>正态分布</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>

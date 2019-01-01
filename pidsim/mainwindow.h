@@ -47,11 +47,16 @@ public:
 	//public slots:
 private slots:
 	void on_cb_ctrlalg_currentIndexChanged(const QString &arg1);
-
 	void on_bt_sim_clicked();
+	void on_bt_fitscreen_clicked();
+	void on_bt_recognize_clicked();
+	void on_bt_import_data_clicked();
+	void on_bt_save_data_clicked();
 
 private:
 	Ui::MainWindow *ui;
 };
+
+extern MainWindow *pwin;
 
 #endif // MAINWINDOW_H

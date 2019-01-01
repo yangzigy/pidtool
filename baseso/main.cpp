@@ -129,9 +129,9 @@ const char *cmd_fun(const char *s)
 	Json::Value v;
 	Json::Reader reader;
 	reader.parse(s,v);
-	if(v["basepid"].isString())
+	if(v["ctrl_fun_basepid"].isString())
 	{
-		string scmd=v["basepid"].asString();
+		string scmd=v["ctrl_fun_basepid"].asString();
 		if(scmd=="curve")
 		{
 			Json::Value rstv;
@@ -140,6 +140,10 @@ const char *cmd_fun(const char *s)
 			rstv["curve"][2]=m_pid.ud;
 			Json::FastWriter writer;
 			rsts=writer.write(rstv);
+		}
+		else if(scmd=="ini") //初始化PID
+		{
+			memset(&m_pid,0,sizeof(float)*7);
 		}
 		else if(scmd=="set_cfg" && v["cfg"].isObject()) //设置配置项
 		{
@@ -183,14 +187,15 @@ const char *cmd_fun(const char *s)
 			rsts=writer.write(rstv);
 		}
 	}
-	else if(v["arma"].isString())
+	else if(v["model_fun_arma"].isString())
 	{
-		string scmd=v["arma"].asString();
+		string scmd=v["model_fun_arma"].asString();
 		if(scmd=="set_cfg" && v["cfg"].isObject()) //设置配置项
 		{
 			if(v["cfg"]["A_list"].isArray())
 			{
 				A_list.resize(v["cfg"]["A_list"].size());
+				x_list.clear();
 				x_list.resize(A_list.size());
 				for(int i=0;i<A_list.size();i++)
 				{
@@ -200,6 +205,7 @@ const char *cmd_fun(const char *s)
 			if(v["cfg"]["B_list"].isArray())
 			{
 				B_list.resize(v["cfg"]["B_list"].size());
+				y_list.clear();
 				y_list.resize((B_list.size()-1)>0?(B_list.size()-1):0);
 				for(int i=0;i<B_list.size();i++)
 				{
