@@ -183,7 +183,7 @@ void MainWindow::on_bt_sim_clicked() //开始仿真
 	);
 	on_bt_fitscreen_clicked();
 	//评估值
-	ui->lb_eval_std->setText(sFormat("%.2f",eval_std).c_str());
+	ui->lb_eval_std->setText(sFormat("均方差：%.2f",eval_std).c_str());
 }
 
 void MainWindow::on_bt_import_data_clicked() //导入数据
