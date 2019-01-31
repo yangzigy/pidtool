@@ -38,10 +38,8 @@ public:
 	QChart *chart0;
 	QLineSeries *chart_serial_0;
 	QLineSeries *chart_serial_1;
-	QChartView *chartView1;
-	QDateTimeAxis *mAxis0;
-	QValueAxis *mAyis0;
-	void set_theme(QChart::ChartTheme theme);
+
+	QTextBrowser *widget_help = new QTextBrowser();
 	//signals:
 	//void signal_rx_cb(); //接收信号
 	//public slots:
@@ -52,6 +50,7 @@ private slots:
 	void on_bt_recognize_clicked();
 	void on_bt_import_data_clicked();
 	void on_bt_save_data_clicked();
+	void on_bt_help_clicked();
 
 private:
 	Ui::MainWindow *ui;

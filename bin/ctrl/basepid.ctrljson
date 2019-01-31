@@ -3,11 +3,11 @@
 	"funname":"ctrl_fun_basepid",
 	"cfgdes":
 	[
-		{"name":"k_in","dft":0.5,"type":"double","des":""},
-		{"name":"P","dft":10,"type":"double","des":""},
-		{"name":"I","dft":1,"type":"double","des":""},
-		{"name":"D","dft":1,"type":"double","des":""},
-		{"name":"T","dft":0.1,"type":"double","des":"单位秒"},
+		{"name":"k_in","dft":0.5,"type":"double","des":"输入滤波系数"},
+		{"name":"P","dft":10,"type":"double","des":"P值"},
+		{"name":"I","dft":1,"type":"double","des":"I值"},
+		{"name":"D","dft":1,"type":"double","des":"D值"},
+		{"name":"T","dft":0.1,"type":"double","des":"采样率(s)"},
 		{"name":"max","dft":100,"type":"double","des":"输出上限"},
 		{"name":"min","dft":-100,"type":"double","des":"输出下限"},
 		{"name":"E","dft":100,"type":"double","des":"积分分离阈值（若不用，则置为最高误差输入）"},

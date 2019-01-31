@@ -1,6 +1,7 @@
 {
 	"dllname":"baseso.so",
 	"funname":"model_fun_arma",
+	"recname":"rec_fun_arma",
 	"cfg":
 	{
 		"A_list":[0.2],

@@ -9,6 +9,7 @@ extern "C"
 {
 	float ctrl_fun_basepid(float exp,float y); //pid控制函数
 	float model_fun_arma(float u); //Arma模型函数
+	float rec_fun_arma(float *u,float *y,int l); //Arma模型辨识函数，返回信度
 	const char *cmd_fun(const char *s); //指令函数
 }
 PID_CON m_pid=
@@ -89,10 +90,10 @@ float ctrl_fun_basepid(float exp,float y)
 //Arma模型：
 //y(t) = b(0) + b(1)y(t-1) + …… + b(m)y(t-m) +
 //		 a(0)x(t) + a(1)x(t-1) + …… + a(n)x(t-n)
-vector<float> A_list; //n+1个
-vector<float> x_list; //n+1个,x(t) …… x(t-n)
-vector<float> B_list; //m+1个
-vector<float> y_list; //m个,y(t-1) …… y(t-m)
+vector<float> A_list; //n个
+vector<float> x_list; //n个,x(t) …… x(t-n)
+vector<float> B_list; //m个
+vector<float> y_list; //m-1个,y(t-1) …… y(t-m)
 float model_fun_arma(float u)
 {
 	float r=0;
@@ -119,6 +120,64 @@ float model_fun_arma(float u)
 	}
 	y_list[0]=r;
 	return r;
+}
+#include <Eigen/Dense>
+using namespace Eigen;
+
+float rec_fun_arma(float *u,float *y,int l) //Arma模型辨识函数，返回信度
+{//使用最小二乘法计算，Ak=y：其中A的第t行和k、y值为：
+//【1,y(t-1)~y(t-m),x(t)~x(t-n)】(行)*【b0~bm,a0~an】(列)=【y(t)】(列)
+//则t必须大于max(m,n)
+	printf("rec_fun_arma:l:%d\n",l);
+	int m=B_list.size();
+	int n=A_list.size();
+	int st=max(m,n);
+	int eq_l=l-st; //方程数
+	if(eq_l<n+m) return 0; //若方程过少
+	MatrixXf A(eq_l,m+n);
+	VectorXf b(eq_l);
+	//装入数据
+	for(int i=0;i<eq_l;i++)
+	{
+		int t=i+st; //矩阵第i行是y的第t个元素
+		A(i,0)=1; //第一列都是1
+		for(int j=1;j<m;j++)
+		{
+			A(i,j)=y[t-j];
+		}
+		for(int j=0;j<n;j++)
+		{
+			A(i,j+m)=u[t-j];
+		}
+		b(i)=y[i];
+	}
+	//解方程
+	VectorXf rst=A.colPivHouseholderQr().solve(b);
+	//将rst填充到参数
+	for(int i=0;i<m;i++)
+	{
+		B_list[i]=rst(i);
+	}
+	for(int i=0;i<n;i++)
+	{
+		A_list[i]=rst(i+m);
+	}
+	//实验效果
+	x_list.resize(A_list.size());
+	y_list.resize(B_list.size());
+	float acc=0,accy=0;
+	for(int i=0;i<l;i++)
+	{
+		float tf=model_fun_arma(u[i]);
+		tf-=y[i]; //误差
+		acc+=fabs(tf);
+		accy+=fabs(y[i]);
+	}
+	acc=acc/accy;
+	MINMAX(acc,0,1);
+	acc=1-acc;
+	printf("s:%.3f\n",acc);
+	return acc;
 }
 //################################################################################
 //						指令函数

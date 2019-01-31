@@ -45,3 +45,6 @@ FORMS += \
 INCLUDEPATH += $$PWD/.
 DEPENDPATH += $$PWD/.
 
+RESOURCES += \
+    res.qrc
+

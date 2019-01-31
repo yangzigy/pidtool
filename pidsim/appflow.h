@@ -6,6 +6,7 @@
 
 typedef float (*CTRL_FUN)(float exp,float y); //控制函数接口
 typedef float (*MODEL_FUN)(float u); //模型函数接口
+typedef float (*REC_FUN)(float *u,float *y,int n); //辨识函数接口
 typedef const char *(*CMD_FUN)(const char *s); //指令函数
 
 class CAlgObj //程序对象
@@ -66,7 +67,21 @@ class CSysModel : public CAlgObj //模型对象
 {
 public:
 	MODEL_FUN fun; //算法调用函数
+	REC_FUN rec_fun=0; //辨识函数
+	string recname=""; //辨识函数名称
 	static string dirname;
+	virtual Json::Value toJson(void)
+	{
+		Json::Value v=CAlgObj::toJson();
+		v["recname"]=recname;
+		return v;
+	}
+	virtual int fromJson(Json::Value &v)
+	{
+		int r=CAlgObj::fromJson(v);
+		recname=v.get("recname","").asString();
+		return r;
+	}
 	virtual void loadso(void); //加载动态库和函数
 };
 

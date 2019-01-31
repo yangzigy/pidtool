@@ -58,10 +58,11 @@ void sim_proc(string expdatafilename, //期望数据文件名
 		return ;
 	}
 	vector<float> expdata;
-	expdata.resize(vs.size());
+	//expdata.resize(vs.size());
 	for(int i=0;i<vs.size();i++)
 	{
-		sscanf(vs[i].c_str(),"%f",&(expdata[i]));
+		float t=0;
+		if(sscanf(vs[i].c_str(),"%f",&t)==1) expdata.push_back(t);
 	}
 	Json::Value rstv;
 	Json::FastWriter writer;
@@ -161,6 +162,10 @@ void sim_proc(string expdatafilename, //期望数据文件名
 //////////////////////////////////////////////////////////////////////////////
 //						算法对象成员函数
 //////////////////////////////////////////////////////////////////////////////
+#define GET_FUN(dllname,funname,l) dlsym(sofiles[dllname],funname.c_str()); \
+	if((error = dlerror()) != NULL) \
+		throw "load dll:"+dllname+" : "+funname+" failed. "+__FILE__+sFormat(":%d\n",l);
+
 void CAlgObj::loadso(void)
 {
 	char *error;
@@ -171,26 +176,23 @@ void CAlgObj::loadso(void)
 			throw string("load dll:")+dllname+" failed. "+__FILE__+sFormat(":%d\n",__LINE__);
 		sofiles[dllname] = tp;
 	}
-	cmd_fun=(CMD_FUN)dlsym(sofiles[dllname],"cmd_fun");
-	if ((error = dlerror()) != NULL)
-		throw string("load dll:")+dllname+" : cmd_fun failed. "+__FILE__+sFormat(":%d\n",__LINE__);
+	string cmd_funname="cmd_fun";
+	cmd_fun=(CMD_FUN)GET_FUN(dllname,cmd_funname,__LINE__);
 }
 string CCtrlAlg::dirname="ctrl";
 void CCtrlAlg::loadso(void)
 {
 	CAlgObj::loadso();
 	char *error;
-	fun=(CTRL_FUN)dlsym(sofiles[dllname],funname.c_str());
-	if ((error = dlerror()) != NULL)
-		throw string("load dll:"+dllname+" : "+funname+" failed. "+__FILE__+sFormat(":%d\n",__LINE__));
+	fun=(CTRL_FUN)GET_FUN(dllname,funname,__LINE__);
 }
 string CSysModel::dirname="model";
 void CSysModel::loadso(void)
 {
 	CAlgObj::loadso();
 	char *error;
-	fun=(MODEL_FUN)dlsym(sofiles[dllname],funname.c_str());
-	if ((error = dlerror()) != NULL)
-		throw string("load dll:"+dllname+" : "+funname+" failed. "+__FILE__+sFormat(":%d\n",__LINE__));
+	fun=(MODEL_FUN)GET_FUN(dllname,funname,__LINE__);
+	if(recname=="") return ;
+	rec_fun=(REC_FUN)GET_FUN(dllname,recname,__LINE__);
 }
 

@@ -11,6 +11,11 @@
 class CDictDis //显示块类
 {
 public: //总类型包括：值、对象、列表 三种。其中值又包括：double int string stringarray等
+///////////////////////////////////////////////////////////////////////
+//参数
+	int name_width=130; //名称列的宽度
+	int val_width=130; //值列的宽度
+///////////////////////////////////////////////////////////////////////
 	//块的属性：
 	string type="string"; //自己的类型
 	string name="";
@@ -57,7 +62,7 @@ public: //总类型包括：值、对象、列表 三种。其中值又包括：
 			lbdes->setReadOnly(true);
 			lbdes->setCursorPosition(0);
 			lbname->setText(name.c_str());
-			lbname->setMinimumWidth(150);
+			lbname->setMinimumWidth(name_width);
 			lbname->setMaximumWidth(150);
 			//lbname->setStyleSheet("font: bold; font-size:18px; color: rgb(241, 70, 62); background-color: green");
 			lbname->setStyleSheet("font: bold;background-color:rgb(230,255,230)");
@@ -120,7 +125,7 @@ public: //总类型包括：值、对象、列表 三种。其中值又包括：
 	void newNormObj(Json::Value &v,const char *ps) //添加一个普通对象
 	{
 		le_value->setText(ps);
-		le_value->setMinimumWidth(150);
+		le_value->setMinimumWidth(val_width);
 		le_value->setMaximumWidth(150);
 		le_value->setStyleSheet("background-color:rgb(255,230,230)");
 

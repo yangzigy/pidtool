@@ -14,8 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	chart0->setMargins(tmpmarg);
 	chartView0 = new QChartView(chart0);
 //	chartView0->setRenderHint(QPainter::Antialiasing, true); //
-//	chart0->setTheme(QChart::ChartThemeDark); //
-//	set_theme(chart0->theme());
+	//chart0->setTheme(QChart::ChartThemeBrownSand); //
 	//chart0->setTitle("Line chart0");
 	chart_serial_0= new QLineSeries(chart0);
 	chart_serial_0->setName("e");
@@ -41,37 +40,6 @@ MainWindow::~MainWindow()
 {
 	delete ui;
 	exit(0); //在win下使用opengl加速，退出时报错，这样强制退出
-}
-void MainWindow::set_theme(QChart::ChartTheme theme)
-{
-	QPalette pal = window()->palette();
-	if (theme == QChart::ChartThemeLight) {
-		pal.setColor(QPalette::Window, QRgb(0xf0f0f0));//f0f0f0是白灰色
-		pal.setColor(QPalette::WindowText, QRgb(0x404044));
-		//![8]
-	} else if (theme == QChart::ChartThemeDark) {
-		pal.setColor(QPalette::Window, QRgb(0x121218));//121218是蓝黑色
-		pal.setColor(QPalette::WindowText, QRgb(0xd6d6d6));//0xd6d6d6是白灰色
-	} else if (theme == QChart::ChartThemeBlueCerulean) {
-		pal.setColor(QPalette::Window, QRgb(0x40434a));//黑灰
-		pal.setColor(QPalette::WindowText, QRgb(0xd6d6d6));//白灰
-	} else if (theme == QChart::ChartThemeBrownSand) {
-		pal.setColor(QPalette::Window, QRgb(0x9e8965));
-		pal.setColor(QPalette::WindowText, QRgb(0x404044));//0x404044是黑灰色
-	} else if (theme == QChart::ChartThemeBlueNcs) {
-		pal.setColor(QPalette::Window, QRgb(0x018bba));
-		pal.setColor(QPalette::WindowText, QRgb(0x404044));
-	} else if (theme == QChart::ChartThemeHighContrast) {
-		pal.setColor(QPalette::Window, QRgb(0xffab03));
-		pal.setColor(QPalette::WindowText, QRgb(0x181818));
-	} else if (theme == QChart::ChartThemeBlueIcy) {
-		pal.setColor(QPalette::Window, QRgb(0xcee7f0));
-		pal.setColor(QPalette::WindowText, QRgb(0x404044));
-	} else {
-		pal.setColor(QPalette::Window, QRgb(0xf0f0f0));
-		pal.setColor(QPalette::WindowText, QRgb(0x404044));
-	}
-	window()->setPalette(pal);
 }
 void MainWindow::ui_initial(void)
 {
@@ -205,7 +173,6 @@ void MainWindow::on_bt_import_data_clicked() //导入数据
 			tmpseries->setUseOpenGL(true); //使用OpenGL加速显示
 			chart0->addSeries(tmpseries);
 		}
-		chart0->createDefaultAxes();
 		int curv_n=line.size();
 		chart0->createDefaultAxes();
 		for(int i=1;i<vs.size();i++) //每一行
@@ -256,8 +223,101 @@ void MainWindow::on_bt_save_data_clicked() //导出数据
 		}
 	}
 }
-
-void MainWindow::on_bt_recognize_clicked() //系统辨识
+void MainWindow::on_bt_help_clicked() //帮助
 {
-
+	QFile nFile(":/help.html");
+	if(!nFile.open(QFile::ReadOnly))
+	{
+		qDebug() << "could not open file for reading";
+		return;
+	}
+	string nText =nFile.readAll().data();
+	nText=com_replace(nText,"src=\"","src=\"qrc:/");
+	widget_help->setStyleSheet("font-size:14px;");
+	widget_help->setMinimumWidth(700);
+	widget_help->setMinimumHeight(500);
+	widget_help->setHtml(nText.c_str());
+	widget_help->show();
 }
+void MainWindow::on_bt_recognize_clicked() //系统辨识
+{//取得模型
+	CFilePath fp_model;
+	fp_model=ui->cb_model->currentText().toStdString();
+	auto pmodel=sp_md[fp_model.name_ext];
+	if(pmodel->recname=="")
+	{
+		string s=sFormat("模型:%s 无辨识函数",pmodel->id.c_str());
+		QMessageBox::information(this,"error", s.c_str(), QMessageBox::Yes);
+	}
+	//打开辨识输入数据,第一列输入，第二列输出
+	auto name=QFileDialog::getOpenFileName(0,"","","csv文件(*.csv)");
+	if(name=="") return ;
+	string text=read_textfile(name.toStdString().c_str());
+	vector<string> vs=com_split(text,"\n");
+	if(vs.size()<2) return ;
+	vector<string> line;
+	vector<float> ulist; //输入列表
+	vector<float> ylist; //输出列表;
+	for(int i=0;i<vs.size();i++) //每一行
+	{
+		line=com_split(vs[i],",");
+		if(line.size()<2) continue;
+		float u=0,y=0;
+		sscanf(line[0].c_str(),"%f",&u);
+		sscanf(line[1].c_str(),"%f",&y);
+		ulist.push_back(u);
+		ylist.push_back(y);
+	}
+	//设置参数,清除状态
+	Json::Value rstv;
+	Json::StyledWriter writer;
+	string s;
+	rstv[pmodel->funname]="set_cfg";
+	rstv["cfg"]=pmodel->cfg;
+	s=writer.write(rstv);
+	pmodel->cmd_fun(s.c_str());
+	//传入辨识函数，开始辨识
+	float r=pmodel->rec_fun(&(ulist[0]),&(ylist[0]),ulist.size());
+	s=sFormat("辨识结果：%.2f，是否保存",r);
+	auto qr=QMessageBox::information(this,"是否保存", s.c_str(), QMessageBox::Yes | QMessageBox::No);
+	if(qr==QMessageBox::No) return ;
+	//若要保存
+	//获取参数
+	rstv.clear();
+	rstv[pmodel->funname]="get_cfg";
+	s=writer.write(rstv);
+	s=pmodel->cmd_fun(s.c_str());
+	Json::Value cfg;
+	Json::Reader reader;
+	reader.parse(s,cfg);
+	rstv=pmodel->toJson();
+	rstv["cfg"]=cfg;
+	//询问保存文件名
+	bool ok = FALSE;
+	QString qtext = QInputDialog::getText(this,tr("保存路径"),tr("请输入文件名:"),QLineEdit::Normal,"",&ok);
+	if(ok && !qtext.isEmpty())
+	{
+		s=qtext.toStdString()+".mdjson";
+		if(s==pmodel->id) //若与之前相等，则提示
+		{
+			QMessageBox::information(this,"error", "文件名与现有模型重复", QMessageBox::Yes);
+			return ;
+		}
+		s=CSysModel::dirname+"/"+s; //文件名
+		CComFile cf;
+		cf.open(s.c_str(),"w");
+		s=writer.write(rstv);
+		cf.write((void*)s.c_str(),s.size());
+		cf.close();
+		//重新加载模型部分
+		extern vector<string> list_dir(const char *path,const char *filter); //列出目录中指定文件
+		vector<string> files=list_dir(CSysModel::dirname.c_str(),"*.mdjson");
+		model_ini(files);
+		ui->cb_model->clear();
+		for(auto &it:sp_md) //控制算法列表
+		{
+			ui->cb_model->addItem(it.first.c_str());
+		}
+	}
+}
+
