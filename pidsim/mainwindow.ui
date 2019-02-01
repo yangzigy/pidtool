@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>控制算法验证</string>
+   <string>控制算法验证软件V0.1</string>
   </property>
   <property name="styleSheet">
    <string notr="true">*{font: 18px;}</string>
@@ -157,7 +157,7 @@
               </widget>
              </item>
              <item row="2" column="0" colspan="2">
-              <widget class="QLabel" name="lb_eval_std_2">
+              <widget class="QLabel" name="lb_eval_max_e">
                <property name="text">
                 <string>最大偏离：</string>
                </property>
@@ -377,16 +377,16 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QLineEdit" name="lineEdit">
+              <widget class="QLineEdit" name="le_e_amp">
                <property name="text">
                 <string>1</string>
                </property>
               </widget>
              </item>
              <item row="0" column="0">
-              <widget class="QPushButton" name="bt_fitscreen_2">
+              <widget class="QLabel" name="label_4">
                <property name="text">
-                <string>误差显示系数</string>
+                <string>误差曲线放大</string>
                </property>
               </widget>
              </item>

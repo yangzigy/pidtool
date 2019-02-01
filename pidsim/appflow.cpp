@@ -37,7 +37,8 @@ float nnorm_mean=0; //均值
 float nnorm_std=1; //均方差
 int en_noise_acc=1; //累积正太分布噪声
 float nacc_std=1; //均方差
-float eval_std=0; //评估效果
+float eval_std=0; //评估效果:标准差
+float eval_max_err=0; //评估效果:最大偏离
 int eval_jump_n=10; //评估跳过值
 //流程函数
 void sim_proc(string expdatafilename, //期望数据文件名
@@ -115,12 +116,22 @@ void sim_proc(string expdatafilename, //期望数据文件名
 	default_random_engine rand_e(time(0));
 	normal_distribution<> rand_norm(nnorm_mean,nnorm_std); //均值、标准差
 	normal_distribution<> rand_acc(0,nacc_std); //均值、标准差
-	for(int i=0;i<expdata.size();i++)
+	eval_max_err=0;
+	for(int i=0;i<expdata.size();i++) //遍历每一个输入激励
 	{
 	//控制函数
 		u=pctrl->fun(expdata[i],y); 
 	//评估效果
-		if(i>=eval_jump_n) eval_std+=(expdata[i]-y)*(expdata[i]-y);
+		if(i>=eval_jump_n) //若需要做效果评估
+		{
+			float tf=expdata[i]-y;
+			eval_std+=tf*tf;
+			tf=fabs(tf);
+			if(tf>eval_max_err)
+			{
+				eval_max_err=tf;
+			}
+		}
 	//曲线操作
 		double d=expdata[i]-y;
 		//printf("%.2f %.2f\n",u,d);

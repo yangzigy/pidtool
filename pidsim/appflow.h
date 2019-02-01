@@ -123,6 +123,7 @@ extern float nnorm_std; //均方差
 extern int en_noise_acc; //累积正太分布噪声
 extern float nacc_std; //均方差
 extern float eval_std; //评估效果
+extern float eval_max_err; //评估效果:最大偏离
 void sim_proc(string expdatafilename, //期望数据文件名
 				CFilePath fp_model, //模型文件名
 				CFilePath fp_ctrl, //控制文件名
