@@ -30,7 +30,7 @@ int main(int argc, const char *argv[]) //测试用
 //模型部分
 	//设置参数
 	Json::Value rstv;
-	rstv["arma"]="set_cfg";
+	rstv["model_fun_arma"]="set_cfg";
 	rstv["cfg"]["B_list"][0]=0;
 	rstv["cfg"]["B_list"][1]=0.9;
 	rstv["cfg"]["A_list"][0]=0.1;
@@ -39,7 +39,7 @@ int main(int argc, const char *argv[]) //测试用
 	cmd_fun(s.c_str());
 //读取参数
 	rstv.clear();
-	rstv["arma"]="get_cfg";
+	rstv["model_fun_arma"]="get_cfg";
 	s=writer.write(rstv);
 	s=cmd_fun(s.c_str());
 	printf("%s\n",s.c_str());
@@ -90,10 +90,10 @@ float ctrl_fun_basepid(float exp,float y)
 //Arma模型：
 //y(t) = b(0) + b(1)y(t-1) + …… + b(m)y(t-m) +
 //		 a(0)x(t) + a(1)x(t-1) + …… + a(n)x(t-n)
-vector<float> A_list; //n个
-vector<float> x_list; //n个,x(t) …… x(t-n)
-vector<float> B_list; //m个
-vector<float> y_list; //m-1个,y(t-1) …… y(t-m)
+vector<float> A_list; //n+1个
+vector<float> x_list; //n+1个,x(t) …… x(t-n)
+vector<float> B_list; //m+1个
+vector<float> y_list; //m个,y(t-1) …… y(t-m)
 float model_fun_arma(float u)
 {
 	float r=0;
@@ -129,39 +129,49 @@ float rec_fun_arma(float *u,float *y,int l) //Arma模型辨识函数，返回信
 //【1,y(t-1)~y(t-m),x(t)~x(t-n)】(行)*【b0~bm,a0~an】(列)=【y(t)】(列)
 //则t必须大于max(m,n)
 	printf("rec_fun_arma:l:%d\n",l);
-	int m=B_list.size();
-	int n=A_list.size();
+	int m=B_list.size()-1;
+	int n=A_list.size()-1;
 	int st=max(m,n);
 	int eq_l=l-st; //方程数
-	if(eq_l<n+m) return 0; //若方程过少
-	MatrixXf A(eq_l,m+n);
+	if(eq_l<n+m || m<0 || n<0) return 0; //若方程过少,或太简单
+	MatrixXf A(eq_l,m+n+2);
 	VectorXf b(eq_l);
 	//装入数据
 	for(int i=0;i<eq_l;i++)
 	{
 		int t=i+st; //矩阵第i行是y的第t个元素
 		A(i,0)=1; //第一列都是1
-		for(int j=1;j<m;j++)
+		printf("A: %.2f ",A(i,0));
+		for(int j=1;j<m+1;j++)
 		{
 			A(i,j)=y[t-j];
+			printf("%.2f ",A(i,j));
 		}
-		for(int j=0;j<n;j++)
+		for(int j=0;j<n+1;j++)
 		{
-			A(i,j+m)=u[t-j];
+			A(i,j+m+1)=u[t-j];
+			printf("%.2f ",A(i,j+m+1));
 		}
-		b(i)=y[i];
+		b(i)=y[t];
+		printf(" B:%.2f\n",b(i));
 	}
+	cout<<"A:"<<endl;
+	cout<<A<<endl;
+	cout<<"b:"<<endl;
+	cout<<b<<endl;
 	//解方程
 	VectorXf rst=A.colPivHouseholderQr().solve(b);
 	//将rst填充到参数
-	for(int i=0;i<m;i++)
+	for(int i=0;i<m+1;i++)
 	{
 		B_list[i]=rst(i);
 	}
-	for(int i=0;i<n;i++)
+	for(int i=0;i<n+1;i++)
 	{
-		A_list[i]=rst(i+m);
+		A_list[i]=rst(i+m+1);
 	}
+	cout<<"rst:"<<endl;
+	cout<<rst<<endl;
 	//实验效果
 	x_list.resize(A_list.size());
 	y_list.resize(B_list.size());

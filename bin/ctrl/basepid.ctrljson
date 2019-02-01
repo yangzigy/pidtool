@@ -3,18 +3,18 @@
 	"funname":"ctrl_fun_basepid",
 	"cfgdes":
 	[
-		{"name":"k_in","dft":0.5,"type":"double","des":"输入滤波系数"},
-		{"name":"P","dft":10,"type":"double","des":"P值"},
-		{"name":"I","dft":1,"type":"double","des":"I值"},
-		{"name":"D","dft":1,"type":"double","des":"D值"},
+		{"name":"k_in","dft":0.8,"type":"double","des":"输入滤波系数"},
+		{"name":"P","dft":1,"type":"double","des":"P值"},
+		{"name":"I","dft":12,"type":"double","des":"I值"},
+		{"name":"D","dft":3,"type":"double","des":"D值"},
 		{"name":"T","dft":0.1,"type":"double","des":"采样率(s)"},
 		{"name":"max","dft":100,"type":"double","des":"输出上限"},
 		{"name":"min","dft":-100,"type":"double","des":"输出下限"},
 		{"name":"E","dft":100,"type":"double","des":"积分分离阈值（若不用，则置为最高误差输入）"},
-		{"name":"Dc","dft":0.1,"type":"double","des":"D环节低通系数"},
+		{"name":"Dc","dft":0.05,"type":"double","des":"D环节低通系数"},
 		{"name":"die","dft":0.01,"type":"double","des":"输入死区绝对值,死区保持输出不变(若不用，则置零)"},
 		{"name":"max_i","dft":100,"type":"double","des":"I环节累积值最大值（若不用，则置为max）"},
 		{"name":"max_d","dft":100,"type":"double","des":"d环节最大值,（若不用，则置为max或以上）"},
-		{"name":"high_e","dft":10,"type":"double","des":"小范围逼近e阈值（若不用，则置为0）"}
+		{"name":"high_e","dft":2,"type":"double","des":"小范围逼近e阈值（若不用，则置为0）"}
 	]
 }
