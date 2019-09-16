@@ -33,7 +33,7 @@ float base_pid(float e,PID_CON *p)//传入误差
 	MINMAX(PID.ud,-PID.max_d,PID.max_d);
 	//准备数据
 	PID.e_pre=PID.e;
-	tmpu = PID.up + PID.ui + PID.ud;//输出基础+P+I+D
+	tmpu = PID.uf + PID.up + PID.ui + PID.ud;//输出基础+P+I+D
 	if(tmpu > PID.max)//限幅+抗饱和积分
 	{
 		tmpu=PID.max;

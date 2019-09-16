@@ -19,6 +19,7 @@ typedef struct
 	float up;//P输出
 	float ui;//I输出
 	float ud;//D输出
+	float uf;//前馈输出，要求外部输入,外部可做复杂算法
 	float u;//总输出
 //参数
 	float k_in;

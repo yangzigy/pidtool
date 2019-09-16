@@ -3,6 +3,7 @@
 	"funname":"ctrl_fun_basepid",
 	"cfgdes":
 	[
+		{"name":"uf","dft":0.0,"type":"double","des":"前馈输出"},
 		{"name":"k_in","dft":0.8,"type":"double","des":"输入滤波系数"},
 		{"name":"P","dft":1,"type":"double","des":"P值"},
 		{"name":"I","dft":12,"type":"double","des":"I值"},

@@ -14,7 +14,7 @@ extern "C"
 }
 PID_CON m_pid=
 {
-	0,0,0, 0,0,0,0,//状态
+	0,0,0, 0,0,0,0,0,//状态
 	0.5,	10,	10,	0.2, //滤波，P，I，D
 	0.1,100,-100, //周期(s)，上下限
 	100,0.1,	0.01, //积分分离阈值，D环节低通，输入死区
@@ -212,11 +212,13 @@ const char *cmd_fun(const char *s)
 		}
 		else if(scmd=="ini") //初始化PID
 		{
-			memset(&m_pid,0,sizeof(float)*7);
+			memset(&m_pid,0,sizeof(float)*6);
+			m_pid.u=0;
 		}
 		else if(scmd=="set_cfg" && v["cfg"].isObject()) //设置配置项
 		{
 			double d=0;
+			d=m_pid.uf; jsonget(v["cfg"],"uf",d); m_pid.uf=d;
 			d=m_pid.k_in; jsonget(v["cfg"],"k_in",d); m_pid.k_in=d;
 			d=m_pid.P; jsonget(v["cfg"],"P",d); m_pid.P=d;
 			d=m_pid.I; jsonget(v["cfg"],"I",d); m_pid.I=d;
@@ -234,6 +236,7 @@ const char *cmd_fun(const char *s)
 		else if(scmd=="get_cfg") //获取配置项
 		{
 			Json::Value rstv;
+			rstv["uf"]=m_pid.uf;
 			rstv["k_in"]=m_pid.k_in;
 			rstv["P"]=m_pid.P;
 			rstv["I"]=m_pid.I;
