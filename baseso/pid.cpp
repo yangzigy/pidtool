@@ -25,7 +25,7 @@ float base_pid(float e,PID_CON *p)//传入误差
 	//小范围加速逼近（P增加:1+2*sqrt(1-(e/K))）
 	if(PID.high_e>0.000001) //P变参系数
 	{
-		tmpu=1-PID.e/PID.high_e;
+		tmpu=1-fabs(PID.e)/PID.high_e;
 		MINMAX(tmpu,0,1);
 		PID.up*=1+2*sqrt(tmpu);
 	}
