@@ -38,7 +38,8 @@ HEADERS += \
     ../common/common.h \
     ../common/json.h \
     ../common/main.h \
-    appflow.h
+    appflow.h \
+    mqchart.h
 
 FORMS += \
         mainwindow.ui

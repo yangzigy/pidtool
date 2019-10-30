@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QTextCodec>
 
 extern Json::Value config; //配置对象
 
@@ -9,10 +10,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	ui->setupUi(this);
 
-	chart0 = new QChart();
-	QMargins tmpmarg(5,5,5,5);
-	chart0->setMargins(tmpmarg);
-	chartView0 = new QChartView(chart0);
+	QMargins tmpmarg(1,1,1,1);
+	chartView0 = new MQChartView();
+	chart0=chartView0->chart0;
 //	chartView0->setRenderHint(QPainter::Antialiasing, true); //
 	//chart0->setTheme(QChart::ChartThemeBrownSand); //
 	//chart0->setTitle("Line chart0");
@@ -43,6 +43,7 @@ MainWindow::~MainWindow()
 }
 void MainWindow::ui_initial(void)
 {
+	ui->lb_curve_data->setText("");
 	for(auto &it:sp_ctrl) //控制算法列表
 	{
 		ui->cb_ctrlalg->addItem(it.first.c_str());
@@ -240,9 +241,11 @@ void MainWindow::on_bt_recognize_clicked() //系统辨识
 void MainWindow::on_bt_import_data_clicked() //导入数据
 {
 	auto name=QFileDialog::getOpenFileName(0,"","","csv文件(*.csv)");
-	if(name!="")
+	QTextCodec *code = QTextCodec::codecForName("gb2312");//解决中文路径问题
+	string namestd = code->fromUnicode(name).data();
+	if(namestd!="")
 	{
-		string text=read_textfile(name.toStdString().c_str());
+		string text=read_textfile(namestd.c_str());
 		vector<string> vs=com_split(text,"\n");
 		if(vs.size()<2) return ;
 		//第一行
@@ -276,10 +279,12 @@ void MainWindow::on_bt_import_data_clicked() //导入数据
 void MainWindow::on_bt_save_data_clicked() //导出数据
 {
 	auto name=QFileDialog::getSaveFileName (0,"","","csv文件(*.csv)");
-	if(name!="")
+	QTextCodec *code = QTextCodec::codecForName("gb2312");//解决中文路径问题
+	string namestd = code->fromUnicode(name).data();
+	if(namestd!="")
 	{
 		CComFile cf;
-		cf.open(name.toStdString().c_str(),"w");
+		cf.open(namestd.c_str(),"w");
 		//首先写第一行
 		string line="";
 		for(auto &it:chart0->series())

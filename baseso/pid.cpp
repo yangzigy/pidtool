@@ -16,7 +16,8 @@ float base_pid(float e,PID_CON *p)//传入误差
 	PID.e=e*PID.k_in + PID.e*(1-PID.k_in); //对误差低通滤波
 	if(fabs(PID.e) < PID.die)//死区
 	{
-		return PID.u;
+		PID.e=0;
+		//return PID.u;
 	}
 	//PID
 	PID.up=PID.e * PID.P;

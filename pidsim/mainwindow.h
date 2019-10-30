@@ -13,6 +13,7 @@
 #include "json.h"
 #include "appflow.h"
 #include "dictdis.h"
+#include "mqchart.h"
 
 using namespace QtCharts;
 
@@ -34,8 +35,8 @@ public:
 	QWidget *subWidget=0;
 	int is_init_ctrls=0; //算法列表是否已经完成
 
-	QChartView *chartView0;
-	QChart *chart0;
+	MQChartView *chartView0;
+	QChart *chart0; //引用
 	QLineSeries *chart_serial_0;
 	QLineSeries *chart_serial_1;
 
