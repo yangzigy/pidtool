@@ -43,7 +43,6 @@ MainWindow::~MainWindow()
 }
 void MainWindow::ui_initial(void)
 {
-	ui->lb_curve_data->setText("");
 	for(auto &it:sp_ctrl) //控制算法列表
 	{
 		ui->cb_ctrlalg->addItem(it.first.c_str());
