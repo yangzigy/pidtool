@@ -1,9 +1,8 @@
 /*
-文件名：pid.c
-作者：北京交通大学 自控1102 杨孜
+文件名：pid.cpp
 时间：2013-9-11
 功能：
-
+	通用pid和简单系统辨识
 */
 #include "pid.h"//认为main.h中已经包含了math.h
 
@@ -64,5 +63,84 @@ float base_pid(float e,PID_CON *p)//传入误差
 	//输出
 	PID.u=tmpu;
 	return PID.u;
+}
+////////////////////////////////////////////////////////////////////////////////
+//简单辨识：
+//y=(1-k)y + kAmpx    k是系统参数，Amp是增益
+//y=Ay + Bx
+float srec_run(float x,float y1,SIMP_REC *sr)
+{
+	return (1-sr->k)*y1 + sr->k*sr->Amp*x;
+}
+void srec_ini(SIMP_REC *sr)
+{
+	sr->k=0.1f;//float k; //系统参数
+	sr->Amp=1;//float Amp; //增益
+	sr->x1=0;//float x1; //前1个值
+	sr->y1=0;//float y1; //前1个值
+	sr->y2=0;//float y2; //前2个值
+	sr->learn_speed=0.2f;//float learn_speed; //学习速度
+	sr->stat=0;//int stat; //0为初始化，1为第一个值，2为计算
+	sr->err=0;//int err; //错误，0正常，1出错
+}
+void srec_learn(float x,float y,SIMP_REC *sr)
+{
+	if(sr->stat==0) //若是初始化
+	{
+		sr->stat=1;
+		goto END;
+	}
+	else if(sr->stat==1)
+	{
+		sr->stat=2;
+	}
+	else if(sr->stat==2)
+	{
+		sr->err=0;
+		//第二次，开始计算
+		//Ay1 + Bx = y
+		//Ay2 + Bx1 = y1
+		float y1=sr->y1,y2=sr->y2,x1=sr->x1;
+		//Ay1y2 + Bxy2 = yy2
+		//Ay2y1 + Bx1y1 = y1y1
+		//B=(yy2-y1y1)/(xy2-x1y1)
+		float tmp=x*y2-x1*y1;
+		if(fabs(tmp)<1e-6)
+		{
+			sr->err=1;
+			goto END;
+		}
+		float B=(y*y2-y1*y1)/tmp;
+		if(fabs(y1)<1e-6)
+		{
+			sr->err=2;
+			goto END;
+		}
+		float A=(y - B*x)/y1;
+		//printf("	A:%.1f*y1:%.1f + B:%.1f*x:%.1f - y:%.1f\n", A,y1,B,x,y);
+		//更新变量
+		float k=1-A;
+		if(k<0 || k>(1-1e-6))
+		{
+			printf("k=%.5f\n",k);
+			sr->err=3;
+			goto END;
+		}
+		float Amp=B/k;
+		if(Amp<0)
+		{
+			sr->err=4;
+			goto END;
+		}
+		sr->k=sr->k*(1-sr->learn_speed) + sr->learn_speed*k;
+		sr->Amp=sr->Amp*(1-sr->learn_speed) + sr->learn_speed*Amp;
+		//printf("	k:%.3f,Amp:%.1f\n",k,Amp);
+		//最后改状态
+		sr->stat=1;
+	}
+END:
+	//状态变量向后滑动
+	sr->y2=sr->y1;
+	sr->x1=x; sr->y1=y;
 }
 

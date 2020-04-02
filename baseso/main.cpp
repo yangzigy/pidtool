@@ -24,8 +24,27 @@ PID_CON m_pid=
 //						工具
 //################################################################################
 #ifndef SOMAKE
+SIMP_REC srobj; //简单系统辨识
 int main(int argc, const char *argv[]) //测试用
 {
+	{ //简单系统辨识的测试
+		srec_ini(&srobj);
+		float y=0,x=20;
+		for(int i=0;i<100;i++)
+		{
+			default_random_engine rand_e;
+			normal_distribution<> rand_norm_small(-1,1); //均值、标准差
+			x=i/30+10+rand_norm_small(rand_e);
+			y=y*0.8f+0.2*x*3 + rand_norm_small(rand_e);
+			//////////////////////////////////////////////////////
+			srec_learn(x,y,&srobj);
+			//////////////////////////////////////////////////////
+			printf("%.1f,%.1f	%.3f	%.1f	%d\n",
+				x,y,
+				srobj.k,srobj.Amp,srobj.err);
+		}
+	}
+	return 0;
 //////////////////////////////////////////////////////////////////
 //模型部分
 	//设置参数
@@ -121,13 +140,14 @@ float model_fun_arma(float u)
 	y_list[0]=r;
 	return r;
 }
-#include <Eigen/Dense>
-using namespace Eigen;
+//#include <Eigen/Dense>
+//using namespace Eigen;
 
 float rec_fun_arma(float *u,float *y,int l) //Arma模型辨识函数，返回信度
 {//使用最小二乘法计算，Ak=y：其中A的第t行和k、y值为：
 //【1,y(t-1)~y(t-m),x(t)~x(t-n)】(行)*【b0~bm,a0~an】(列)=【y(t)】(列)
 //则t必须大于max(m,n)
+	/*
 	printf("rec_fun_arma:l:%d\n",l);
 	int m=B_list.size()-1;
 	int n=A_list.size()-1;
@@ -188,6 +208,8 @@ float rec_fun_arma(float *u,float *y,int l) //Arma模型辨识函数，返回信
 	acc=1-acc;
 	printf("s:%.3f\n",acc);
 	return acc;
+	*/
+	return 0;
 }
 //################################################################################
 //						指令函数

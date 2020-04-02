@@ -50,5 +50,25 @@ typedef struct
 //8、D值限幅（抑制超调）
 float base_pid(float e,PID_CON *p);//传入期望值、传感值
 
+/////////////////////////////////////////////////////////////////////
+//简单系统辨识，1阶系统，增量学习，两次输入更新一次参数
+//参数包括：
+//	k，系统参数，是输入的系数
+//	Amp，是输入增益，由于没有去偏置，所以不太准
+typedef struct
+{
+	float k; //系统参数
+	float Amp; //增益
+	float x1; //前1个值
+	float y1; //前1个值
+	float y2; //前2个值
+	float learn_speed; //学习速度
+	int stat; //0为初始化，1为第一个值，2为计算
+	int err; //错误，0正常，>=1出错
+} SIMP_REC;
+void srec_ini(SIMP_REC *sr);
+float srec_run(float x,float y1,SIMP_REC *sr);
+void srec_learn(float x,float y,SIMP_REC *sr);
+
 #endif
 
